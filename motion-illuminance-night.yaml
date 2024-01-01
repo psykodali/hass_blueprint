@@ -51,7 +51,7 @@ blueprint:
           unit_of_measurement: seconds
           mode: slider
           step: 1.0
-  source_url: https://gist.github.com/Danielbook/7814e7eb32e880b2d7c3fb5ba8430f4f
+  source_url: https://github.com/psykodali/hass_blueprint/blob/main/motion-illuminance-night.yaml
 mode: restart
 max_exceeded: silent
 trigger:
