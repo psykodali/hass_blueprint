@@ -1,0 +1,235 @@
+blueprint:
+  name: Philips Tap Dial Dali
+  description: "Z2MTT DALI PHILIPS HUE DIAL With autodim latest light"
+  source_url: https://github.com/psykodali/hass_blueprint/blob/main/philips_hue_tap_dial_switch_zigbee2mqtt_autodim_blueprint.yaml
+  domain: automation
+  input:
+    button_sensor:
+      name: Philips Hue Tap dial switch sensor entity
+      description: Sensor for Philips Hue Tap dial switch to use (Use sensor with entity_id ends with _action)
+      selector:
+        entity:
+          domain: sensor
+    first_light:
+      name: First Light
+      description: The light(s) to control with first button
+      selector:
+        target:
+          entity:
+            domain: light
+    second_light:
+      name: (OPTIONAL) Second Light
+      description: The light(s) to control with second button
+      default: {}
+      selector:
+        target:
+          entity:
+            domain: light
+    third_light:
+      name: (OPTIONAL) Third Light
+      description: The light(s) to control with third button
+      default: {}
+      selector:
+        target:
+          entity:
+            domain: light
+    forth_light:
+      name: (OPTIONAL) Forth Light
+      description: The light(s) to control with forth button
+      default: {}
+      selector:
+        target:
+          entity:
+            domain: light
+    current_light:
+      name: (OPTIONAL) Current Light
+      description: "Text helper to track the current light to dim. Set for the dimmer controls to change which light they are controlling according to the last one turned on."
+      default:
+      selector:
+        entity:
+          domain: input_text
+    bsteps:
+      name: brightness 1 step
+      description: Brightness 1 step
+      default: 1
+      selector:
+        number:
+          min: 0.0
+          max: 10.0
+          step: 1
+    bsteps_slow:
+      name: brightness slow steps
+      description: Brightness slow steps
+      default: 10
+      selector:
+        number:
+          min: 0.0
+          max: 20.0
+          step: 1
+    bsteps_fast:
+      name: brightness fast steps
+      description: Brightness fast steps
+      default: 20
+      selector:
+        number:
+          min: 0.0
+          max: 30.0
+          step: 1
+mode: restart
+max_exceeded: silent
+variables:
+  first_light: !input "first_light"
+  second_light: !input "second_light"
+  third_light: !input "third_light"
+  forth_light: !input "forth_light"
+  current_light: !input "current_light"
+  bsteps: !input "bsteps"
+  bsteps_slow: !input "bsteps_slow"
+  bsteps_fast: !input "bsteps_fast"
+  lights:
+    first_light: !input "first_light"
+    second_light: !input "second_light"
+    third_light: !input "third_light"
+    forth_light: !input "forth_light"
+trigger:
+  - platform: state
+    entity_id: !input "button_sensor"
+    to: "button_1_press"
+  - platform: state
+    entity_id: !input "button_sensor"
+    to: "button_2_press"
+  - platform: state
+    entity_id: !input "button_sensor"
+    to: "button_3_press"
+  - platform: state
+    entity_id: !input "button_sensor"
+    to: "button_4_press"
+  - platform: state
+    entity_id: !input "button_sensor"
+    to: "dial_rotate_left_step"
+  - platform: state
+    entity_id: !input "button_sensor"
+    to: "dial_rotate_left_slow"
+  - platform: state
+    entity_id: !input "button_sensor"
+    to: "dial_rotate_left_fast"
+  - platform: state
+    entity_id: !input "button_sensor"
+    to: "dial_rotate_right_step"
+  - platform: state
+    entity_id: !input "button_sensor"
+    to: "dial_rotate_right_slow"
+  - platform: state
+    entity_id: !input "button_sensor"
+    to: "dial_rotate_right_fast"
+action:
+  - variables:
+      action: "{{ trigger.to_state.state }}"
+  - choose:
+      - conditions: "{{ action == 'button_1_press' }}"
+        sequence:
+          - service: homeassistant.toggle
+            target: !input "first_light"
+          - choose:
+              - conditions: "{{ current_light != none }}"
+                sequence:
+                  - service: input_text.set_value
+                    target:
+                      entity_id: !input "current_light"
+                    data:
+                      value: first_light
+      - conditions: "{{ action == 'button_2_press' }}"
+        sequence:
+          - service: homeassistant.toggle
+            target: !input "second_light"
+          - choose:
+              - conditions: "{{ current_light != none }}"
+                sequence:
+                  - service: input_text.set_value
+                    target:
+                      entity_id: !input "current_light"
+                    data:
+                      value: second_light
+      - conditions: "{{ action == 'button_3_press' }}"
+        sequence:
+          - service: homeassistant.toggle
+            target: !input "third_light"
+          - choose:
+              - conditions: "{{ current_light != none }}"
+                sequence:
+                  - service: input_text.set_value
+                    target:
+                      entity_id: !input "current_light"
+                    data:
+                      value: third_light
+      - conditions: "{{ action == 'button_4_press' }}"
+        sequence:
+          - service: homeassistant.toggle
+            target: !input "forth_light"
+          - choose:
+              - conditions: "{{ current_light != none }}"
+                sequence:
+                  - service: input_text.set_value
+                    target:
+                      entity_id: !input "current_light"
+                    data:
+                      value: forth_light
+      - conditions: "{{ action == 'dial_rotate_right_step' }}"
+        sequence:
+          - choose:
+              - conditions: "{{ current_light != none }}"
+                sequence:
+                  - service: light.turn_on
+                    target: "{{ lights[states(current_light)] }}"
+                    data:
+                      brightness_step_pct: "{{(bsteps)}}"
+            default:
+              - service: light.turn_on
+                target: !input "first_light"
+                data:
+                  brightness_step_pct: "{{(bsteps)}}"
+      - conditions: "{{ action == 'dial_rotate_left_step' }}"
+        sequence:
+          - choose:
+              - conditions: "{{ current_light != none }}"
+                sequence:
+                  - service: light.turn_on
+                    target: "{{ lights[states(current_light)] }}"
+                    data:
+                      brightness_step_pct: "{{(bsteps*-1)}}"
+      - conditions: "{{ action == 'dial_rotate_right_slow' }}"
+        sequence:
+          - choose:
+              - conditions: "{{ current_light != none }}"
+                sequence:
+                  - service: light.turn_on
+                    target: "{{ lights[states(current_light)] }}"
+                    data:
+                      brightness_step_pct: "{{(bsteps_slow)}}"
+      - conditions: "{{ action == 'dial_rotate_left_slow' }}"
+        sequence:
+          - choose:
+              - conditions: "{{ current_light != none }}"
+                sequence:
+                  - service: light.turn_on
+                    target: "{{ lights[states(current_light)] }}"
+                    data:
+                      brightness_step_pct: "{{(bsteps_slow*-1)}}"
+      - conditions: "{{ action == 'dial_rotate_right_fast' }}"
+        sequence:
+          - choose:
+              - conditions: "{{ current_light != none }}"
+                sequence:
+                  - service: light.turn_on
+                    target: "{{ lights[states(current_light)] }}"
+                    data:
+                      brightness_step_pct: "{{(bsteps_fast)}}"
+      - conditions: "{{ action == 'dial_rotate_left_fast' }}"
+        sequence:
+          - choose:
+              - conditions: "{{ current_light != none }}"
+                sequence:
+                  - service: light.turn_on
+                    target: "{{ lights[states(current_light)] }}"
+                    data:
+                      brightness_step_pct: "{{(bsteps_fast*-1)}}"
