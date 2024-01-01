@@ -167,11 +167,7 @@ action:
           - service: homeassistant.toggle
             target: !input "forth_light"
           - choose:
-              - conditions: 
-                - condition: template
-                  value_template: "{{ current_light != none }}"
-                - condition: template
-                  value_template: "{{ forth_light != none }}"                  
+              - conditions: "{{ current_light != none }}"
                 sequence:
                   - service: input_text.set_value
                     target:
