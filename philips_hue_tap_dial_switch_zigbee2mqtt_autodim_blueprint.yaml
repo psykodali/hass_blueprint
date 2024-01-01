@@ -1,6 +1,6 @@
 blueprint:
   name: Philips Tap Dial Dali
-  description: "Z2MTT DALI PHILIPS HUE DIAL"
+  description: "Z2MTT DALI PHILIPS HUE DIAL With autodim latest light"
   source_url: https://github.com/psykodali/hass_blueprint/blob/main/philips_hue_tap_dial_switch_zigbee2mqtt_autodim_blueprint.yaml
   domain: automation
   input:
