@@ -150,18 +150,6 @@ action:
                       entity_id: !input "current_light"
                     data:
                       value: second_light
-      - conditions: "{{ action == 'button_3_press' }}"
-        sequence:
-          - service: homeassistant.toggle
-            target: !input "third_light"
-          - choose:
-              - conditions: "{{ current_light != none }}"
-                sequence:
-                  - service: input_text.set_value
-                    target:
-                      entity_id: !input "current_light"
-                    data:
-                      value: third_light
       - conditions: "{{ action == 'button_4_press' }}"
         sequence:
           - service: homeassistant.toggle

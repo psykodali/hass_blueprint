@@ -162,18 +162,6 @@ action:
                       entity_id: !input "current_light"
                     data:
                       value: third_light
-      - conditions: "{{ action == 'button_4_press' }}"
-        sequence:
-          - service: homeassistant.toggle
-            target: !input "forth_light"
-          - choose:
-              - conditions: "{{ current_light != none }}"
-                sequence:
-                  - service: input_text.set_value
-                    target:
-                      entity_id: !input "current_light"
-                    data:
-                      value: forth_light
       - conditions: "{{ action == 'dial_rotate_right_step' }}"
         sequence:
           - choose:
